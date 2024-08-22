@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cache-resizer-app
+    ports:
+      - '8080:8080'
+    networks:
+      - tcc
+    volumes:
+      - ./db:/app/db
+
+  haproxy:
+    build:
+      context: ./docker/haproxy
+      dockerfile: Dockerfile
+    image: haproxy-tcc:latest
+    container_name: haproxy-cache-resizer
+    ports:
+      - '8100:8100'
+      - '8200:8200'
+      - '1936:1936'
+    volumes:
+      - ./docker/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./docker/haproxy/update-cache.lua:/tmp/update-cache.lua
+    command: ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg", "-p", "/var/run/haproxy.pid", "-x", "/var/run/haproxy.sock"]
+    depends_on:
+      - app
+    networks:
+      - tcc
+
+networks:
+  tcc:
+    driver: bridge
