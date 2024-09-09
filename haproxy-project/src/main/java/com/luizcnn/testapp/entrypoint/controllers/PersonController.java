@@ -26,8 +26,8 @@ public class PersonController {
     public ResponseEntity<?> getPerson(@PathVariable Long id) {
         try {
             log.info("status=requesting-person-by-id, id={}", id);
-            final var person =  personService.findPersonById(id);
-            if(nonNull(person)) {
+            final var person = personService.findPersonById(id);
+            if (nonNull(person)) {
                 log.info("status=success, person={}", person);
                 return ResponseEntity
                         .ok()

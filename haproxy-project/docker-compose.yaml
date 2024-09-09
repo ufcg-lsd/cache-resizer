@@ -12,6 +12,22 @@ services:
       - tcc
     volumes:
       - ./db:/app/db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13.1-alpine
+    container_name: tcc_postgres_db
+    environment:
+      POSTGRES_USER: tccadmin
+      POSTGRES_PASSWORD: tccadmin
+      POSTGRES_DB: tcc
+    ports:
+      - "5432:5432"
+    volumes:
+      - tcc_postgres_data:/var/lib/postgresql/data
+    networks:
+      - tcc
 
   haproxy:
     build:
@@ -35,3 +51,7 @@ services:
 networks:
   tcc:
     driver: bridge
+
+volumes:
+  tcc_postgres_data:
+    driver: local
