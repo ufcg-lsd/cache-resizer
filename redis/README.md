@@ -35,7 +35,7 @@ Before running the script, ensure that you have the following dependencies insta
 Once these dependencies are installed, you should be able to run the script without any issues.
 
 ## Running the experiment
-In the bin directory, run:
+In the `/redis/bin` directory, run:
 ```sh
 bash load-resize.sh <qtd_clients> <iat> <execution_time>
 ```
