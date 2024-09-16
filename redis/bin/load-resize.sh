@@ -32,9 +32,9 @@ python3 ../src/fill_redis.py
 
 # Requests 
 go run ../src/client.go "$qtd_clients" "$iat" "$execution_time" &
+sleep 3
 
 # Resize
-sleep 1
 python3 ../src/resize.py
 
 wait
