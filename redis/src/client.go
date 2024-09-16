@@ -23,7 +23,7 @@ func newClient(id string, redisClient *redis.Client) *Client {
 
 func (client *Client) get(key string) {
 	start := time.Now()
-	val, err := client.redisClient.Get(context.Background(), key).Result()
+	_, err := client.redisClient.LRange(context.Background(), key, 0, -1).Result()
 	elapsed := time.Since(start)
 
 	hitMiss := "miss"
@@ -34,7 +34,7 @@ func (client *Client) get(key string) {
 	if err != nil {
 		logrus.Warnf("Get failed: %v", err)
 	} else {
-		logrus.Infof("%s %s %v %s %v", client.id, key, elapsed, hitMiss, val)
+		logrus.Infof("%s %s %v %s", client.id, key, elapsed, hitMiss)
 	}
 }
 
