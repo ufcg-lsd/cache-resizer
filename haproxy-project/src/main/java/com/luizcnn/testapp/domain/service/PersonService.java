@@ -1,22 +1,26 @@
 package com.luizcnn.testapp.domain.service;
 
 import com.luizcnn.testapp.dataprovider.client.RandomPersonClient;
-import com.luizcnn.testapp.dataprovider.dao.impl.PersonFileRepository;
+import com.luizcnn.testapp.dataprovider.dao.impl.PersonJpaRepository;
 import com.luizcnn.testapp.domain.entity.PersonEntity;
 import com.luizcnn.testapp.domain.mappers.impl.PersonMapper;
 import com.luizcnn.testapp.domain.models.Person;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PersonService {
 
     private final RandomPersonClient randomPersonClient;
-    private final PersonFileRepository personFileRepository;
+    private final PersonJpaRepository personJpaRepository;
 
     public PersonEntity findPersonById(Long id) {
-        return personFileRepository.findPersonById(id);
+        return personJpaRepository
+                .findById(id)
+                .orElse(null);
     }
 
     public void createPersonsFromApi(int quantity) {
@@ -35,7 +39,7 @@ public class PersonService {
                         .build()
                 ).toList();
 
-        personsModel.forEach(it -> personFileRepository.save(new PersonMapper().toEntity(it)));
+        personsModel.forEach(it -> personJpaRepository.save(new PersonMapper().toEntity(it)));
     }
 
 }
