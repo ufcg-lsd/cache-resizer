@@ -28,10 +28,11 @@ if [ -z "$container_id" ]; then
 fi
 
 # Load injection
-python3 ../src/fill_redis.py 
+echo "Filling Redis..."
+num_keys=$(python3 ../src/fill_redis.py | tee /dev/tty | grep "Number of keys:" | cut -d ':' -f2)
 
 # Requests 
-go run ../src/client.go "$qtd_clients" "$iat" "$execution_time" &
+go run ../src/client.go "$qtd_clients" "$iat" "$execution_time" "$num_keys" &
 sleep 3
 
 # Resize
