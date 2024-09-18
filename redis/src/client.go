@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -23,32 +24,36 @@ func newClient(id string, redisClient *redis.Client) *Client {
 
 func (client *Client) get(key string) {
 	start := time.Now()
-	_, err := client.redisClient.LRange(context.Background(), key, 0, -1).Result()
+	// get to retrieve a list using arg key
+	res, _ := client.redisClient.LRange(context.Background(), key, 0, -1).Result()
 	elapsed := time.Since(start)
 
-	hitMiss := "miss"
-	if err == nil {
-		hitMiss = "hit"
+	hitMiss := "hit"
+	if len(res) == 0 {
+		hitMiss = "miss"
 	}
 
-	if err != nil {
-		logrus.Warnf("Get failed: %v", err)
-	} else {
-		logrus.Infof("%s %s %v %s", client.id, key, elapsed, hitMiss)
-	}
+	logrus.Infof("%s %s %v %s", client.id, key, elapsed, hitMiss)
 }
 
 func main() {
+	if len(os.Args) < 5 {
+		fmt.Println("Usage: go run client.go <qtd_clients> <iat> <execution_time> <num_keys>")
+		return
+	}
+
 	arg1 := os.Args[1]
 	arg2 := os.Args[2]
 	arg3 := os.Args[3]
+	arg4 := os.Args[4]
 
 	qtdClients, errClients := strconv.Atoi(arg1)
 	iat, errIat := strconv.Atoi(arg2)
 	executionTime, errExecutionTime := time.ParseDuration(arg3)
+	numKeys, errNumKeys := strconv.Atoi(arg4)
 
-	if errClients != nil || errIat != nil {
-		log.Fatalf("Erro ao converter '%s' ou '%s' para inteiro.", arg1, arg2)
+	if errClients != nil || errIat != nil || errNumKeys != nil {
+		log.Fatalf("Erro ao converter '%s' ou '%s' ou '%s' para inteiro.", arg1, arg2, arg4)
 	}
 
 	if errExecutionTime != nil {
@@ -65,7 +70,6 @@ func main() {
 
 		go func() {
 			start := time.Now()
-			j := 0
 
 			for {
 				elapsed := time.Since(start)
@@ -74,11 +78,9 @@ func main() {
 					break
 				}
 
-				key := fmt.Sprintf("key%d", j)
+				key := fmt.Sprintf("key%d", rand.Intn(numKeys))
 				client.get(key)
 				time.Sleep(time.Duration(iat) * time.Second)
-
-				j++
 			}
 		}()
 	}
