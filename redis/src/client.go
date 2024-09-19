@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
@@ -33,7 +32,7 @@ func (client *Client) get(key string) {
 		hitMiss = "miss"
 	}
 
-	logrus.Infof("%s %s %v %s", client.id, key, elapsed, hitMiss)
+	log.Printf("%s %v %s %s", client.id, key, elapsed, hitMiss)
 }
 
 func main() {
