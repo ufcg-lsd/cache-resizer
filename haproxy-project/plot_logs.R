@@ -20,22 +20,36 @@ log_data <- do.call(rbind, lapply(logs, extract_data))
 
 # Step 4: Calculate throughput (requests per second)
 log_data <- log_data %>%
-  mutate(Throughput = 1 / (TotalTime / 1e6)) # Convert total time from microseconds to seconds and calculate throughput
+  mutate(Throughput = 1 / (TotalTime / 1e6))  # Convert total time from microseconds to seconds
 
-# Step 5: Plot Latency
-ggplot(log_data, aes(x = StartDate, y = TotalTime)) +
+# Step 5: Group data into 10-second intervals and calculate the mean values
+log_data_summary <- log_data %>%
+  mutate(TimeGroup = cut(StartDate, breaks = "5 sec")) %>% # Group data into 10-second intervals
+  group_by(TimeGroup) %>%
+  summarise(MeanLatency = mean(TotalTime), MeanThroughput = mean(Throughput))
+
+# Step 6: Convert TimeGroup back to POSIXct for plotting
+log_data_summary <- log_data_summary %>%
+  mutate(TimeGroup = as.POSIXct(TimeGroup))
+
+# Step 7: Plot Mean Latency over time
+ggplot(log_data_summary, aes(x = TimeGroup, y = MeanLatency)) +
   geom_line(color = "red") +
-  labs(title = "Request Latency Over Time", x = "Timestamp", y = "Latency (microseconds)") +
+  labs(title = "Mean Request Latency Over Time (5-second intervals)",
+       x = "Timestamp",
+       y = "Mean Latency (microseconds)") +
   theme_minimal()
 
-# Save the Latency plot
-ggsave("latency_plot.png")
+# Save the Mean Latency plot
+ggsave("mean_latency_plot.png")
 
-# Step 6: Plot Throughput
-ggplot(log_data, aes(x = StartDate, y = Throughput)) +
+# Step 8: Plot Mean Throughput over time
+ggplot(log_data_summary, aes(x = TimeGroup, y = MeanThroughput)) +
   geom_line(color = "blue") +
-  labs(title = "Request Throughput Over Time", x = "Timestamp", y = "Throughput (requests/second)") +
+  labs(title = "Mean Request Throughput Over Time (5-second intervals)",
+       x = "Timestamp",
+       y = "Mean Throughput (requests/second)") +
   theme_minimal()
 
-# Save the Throughput plot
-ggsave("throughput_plot.png")
+# Save the Mean Throughput plot
+ggsave("mean_throughput_plot.png")
