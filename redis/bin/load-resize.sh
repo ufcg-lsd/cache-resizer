@@ -32,14 +32,15 @@ echo "Filling Redis..."
 num_keys=$(python3 ../src/fill_redis.py | tee /dev/tty | grep "Number of keys:" | cut -d ':' -f2)
 
 # Requests 
-go run ../src/client.go "$qtd_clients" "$iat" "$execution_time" "$num_keys" 2>&1 | tee ../src/resources/logs.txt &
-sleep 3
+go run ../src/client.go "$qtd_clients" "$iat" "$execution_time" "$num_keys" 2>&1 | tee ../src/resources/r/logs.txt &
+sleep 120
 
 # Resize
-python3 ../src/resize.py
+log_resize=$(python3 ../src/resize.py | tee /dev/tty)
 
 wait
 
+echo "$log_resize"
 # Stopping and removing the container
 docker stop "$container_id"
 docker rm "$container_id"
