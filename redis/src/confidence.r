@@ -1,4 +1,3 @@
-# Carregar as bibliotecas necessárias
 library(dplyr)
 library(lubridate)
 
