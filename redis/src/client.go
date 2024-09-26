@@ -32,7 +32,7 @@ func (client *Client) get(key string) {
 		hitMiss = "miss"
 	}
 
-	log.Printf("%s %v %s %s", client.id, key, elapsed, hitMiss)
+	log.Printf("%s %v %dµs %s", client.id, key, elapsed.Microseconds(), hitMiss)
 }
 
 func main() {
@@ -68,15 +68,8 @@ func main() {
 		client := newClient(clientID, redisClient)
 
 		go func() {
-			start := time.Now()
 
 			for {
-				elapsed := time.Since(start)
-
-				if elapsed >= executionTime {
-					break
-				}
-
 				key := fmt.Sprintf("key%d", rand.Intn(numKeys))
 				client.get(key)
 				time.Sleep(time.Duration(iat) * time.Second)
@@ -84,5 +77,5 @@ func main() {
 		}()
 	}
 
-	time.Sleep(30 * time.Second)
+	time.Sleep(executionTime)
 }
