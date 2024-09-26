@@ -3,39 +3,44 @@ library(ggplot2)
 library(dplyr)
 library(lubridate)
 
-# Read the logs file
-logs <- read.table("logs.txt", header = FALSE, stringsAsFactors = FALSE)
-colnames(logs) <- c("date", "time", "client", "key", "latency", "status")
+setwd("/home/augusto/workspace/cache-resizer/redis/src")
 
-# Combine date and time into a single datetime column
-logs$timestamp <- as.POSIXct(paste(logs$date, logs$time), format="%Y/%m/%d %H:%M:%S")
+logs <- read.table("resources/r50/logs.txt", header = FALSE, stringsAsFactors = FALSE)
+colnames(logs) <- c("date", "timestamp", "client", "key", "latency", "status")
 
-# Convert latency to microseconds
-logs$latency <- ifelse(grepl("ms", logs$latency), as.numeric(sub("ms", "", logs$latency)) * 1000, as.numeric(sub("µs", "", logs$latency)))
+# 1 min after real start (without warmup)
+start_time <- as.POSIXct("11:46:19", format="%H:%M:%S", tz="UTC")
+logs$timest <- as.POSIXct(logs$time, format="%H:%M:%S", tz="UTC")
+logs$latency <- as.numeric(sub("µs", "", logs$latency))
 
-# Calculate throughput (requests per second)
-logs <- logs %>%
-  group_by(timestamp) %>%
-  mutate(throughput = n())
+# Only hits and without warmup
+logs <- filter(logs, timest >= start_time, status == "hit", latency < 1000) # Review latency < 1000
 
-# Plot 1: Latency over time
-plot_latency <- ggplot(logs, aes(x = timestamp, y = latency)) +
+
+# Throughput and Average Latency
+logs_summary <- logs %>%
+  group_by(timest) %>%
+  summarise(
+    avg_latency = mean(latency),
+    throughput = n()
+  )
+
+# Plot 1: Average Latency over time (per second)
+plot_latency <- ggplot(logs_summary, aes(x = timest, y = avg_latency)) +
   geom_line(color = "red") +
-  labs(title = "Latency over Time", x = "Timestamp", y = "Latency (µs)") +
-  scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "10 sec") +
+  labs(title = "Average Latency over Time", x = "Timestamp", y = "Average Latency (µs)") +
+  scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "30 sec") +
   theme_minimal()
 
-# Plot 2: Throughput over time
-plot_throughput <- ggplot(logs, aes(x = timestamp, y = throughput)) +
+# Plot 2: Throughput over time (requests per second)
+plot_throughput <- ggplot(logs_summary, aes(x = timest, y = throughput)) +
   geom_line(color = "blue") +
   labs(title = "Throughput over Time", x = "Timestamp", y = "Throughput (requests per second)") +
-  scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "10 sec") +
+  scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "30 sec") +
   theme_minimal()
 
-# Save the plots
-ggsave("latency_plot.png", plot = plot_latency)
-ggsave("throughput_plot.png", plot = plot_throughput)
+ggsave("resources/r50/latency_plot.png", plot = plot_latency)
+ggsave("resources/r50/throughput_plot.png", plot = plot_throughput)
 
-# Print the plots
 print(plot_latency)
 print(plot_throughput)
