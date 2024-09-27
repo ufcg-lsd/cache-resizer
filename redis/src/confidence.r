@@ -3,15 +3,14 @@ library(lubridate)
 
 setwd("/home/augusto/workspace/cache-resizer/redis/src")
 
-logs <- read.table("resources/r50/logs.txt", header = FALSE, stringsAsFactors = FALSE)
-colnames(logs) <- c("date", "timestamp", "client", "key", "latency", "status")
+logs <- read.table("resources/r75/logs.txt", header = FALSE, stringsAsFactors = FALSE)
+colnames(logs) <- c("date", "time", "client", "key", "latency", "status")
 
-resize_timestamp <- as.POSIXct("11:47:19", format="%H:%M:%S", tz="UTC")
-resize_start <- resize_timestamp  # mesmo valor
-resize_end <- as.POSIXct("11:47:20", format="%H:%M:%S", tz="UTC")
+resize_start <- as.POSIXct("11:55:08", format="%H:%M:%S", tz="UTC")
+resize_end <- as.POSIXct("11:55:09", format="%H:%M:%S", tz="UTC")
 
 # 1 min after real start (without warmup)
-start_time <- as.POSIXct("11:46:19", format="%H:%M:%S", tz="UTC")
+start_time <- as.POSIXct("11:54:08", format="%H:%M:%S", tz="UTC")
 logs$timest <- as.POSIXct(logs$time, format="%H:%M:%S", tz="UTC")
 logs$latency <- as.numeric(sub("µs", "", logs$latency))
 
@@ -42,7 +41,7 @@ ci_bootstrap_before_hit <- calc_confidence_interval_bootstrap(before_resize$late
 ci_bootstrap_during_hit <- calc_confidence_interval_bootstrap(during_resize$latency)
 ci_bootstrap_after_hit <- calc_confidence_interval_bootstrap(after_resize$latency)
 
-file_conn <- file("resources/r50/confidence.txt")
+file_conn <- file("resources/r75/confidence.txt")
 cat("IC bootstrap Antes do redimensionamento: [", ci_bootstrap_before_hit[1], ", ", ci_bootstrap_before_hit[2], "]\n",
     "IC bootstrap Durante o redimensionamento: [", ci_bootstrap_during_hit[1], ", ", ci_bootstrap_during_hit[2], "]\n",
     "IC bootstrap Após o redimensionamento: [", ci_bootstrap_after_hit[1], ", ", ci_bootstrap_after_hit[2], "]\n",
