@@ -4,13 +4,13 @@ library(lubridate)
 
 setwd("/home/augusto/workspace/cache-resizer/redis/src")
 
-logs <- read.table("resources/r10/logs.txt", header = FALSE, stringsAsFactors = FALSE)
+logs <- read.table("resources/r50/logs.txt", header = FALSE, stringsAsFactors = FALSE)
 colnames(logs) <- c("date", "time", "client", "key", "latency", "status")
 
-resize_timestamp <- as.POSIXct("11:19:49", format="%H:%M:%S", tz="UTC")
+resize_timestamp <- as.POSIXct("11:47:19", format="%H:%M:%S", tz="UTC")
 
 # 1 min after real start (without warmup)
-start_time <- as.POSIXct("11:18:49", format="%H:%M:%S", tz="UTC")
+start_time <- as.POSIXct("11:46:19", format="%H:%M:%S", tz="UTC")
 logs$timest <- as.POSIXct(logs$time, format="%H:%M:%S", tz="UTC")
 logs$latency <- as.numeric(sub("µs", "", logs$latency))
 
@@ -36,7 +36,7 @@ logs_throughput <- logs %>%
 plot_latency <- ggplot(logs_avg_latency, aes(x = timest, y = avg_latency)) +
   geom_line(color = "red") +
   geom_vline(xintercept = resize_timestamp, color = "gray", linetype = "dotdash", size = 1) +
-  labs(title = "Average Latency over Time", x = "Timestamp", y = "Average Latency (µs)") +
+  labs(title = "Latência média ao longo do tempo", x = "Tempo", y = "Latência média (µs)") +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "30 sec") +
   theme_minimal()
 
@@ -44,12 +44,12 @@ plot_latency <- ggplot(logs_avg_latency, aes(x = timest, y = avg_latency)) +
 plot_throughput <- ggplot(logs_throughput, aes(x = timest, y = throughput)) +
   geom_line(color = "blue") +
   geom_vline(xintercept = as.numeric(resize_timestamp), color = "gray", linetype = "dotdash", size = 1) +
-  labs(title = "Throughput over Time", x = "Timestamp", y = "Throughput (requests per second)") +
+  labs(title = "Vazão ao longo do tempo", x = "Tempo", y = "Vazão") +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "30 sec") +
   theme_minimal()
 
-ggsave("resources/r10/latency_plot.png", plot = plot_latency)
-ggsave("resources/r10/throughput_plot.png", plot = plot_throughput)
+ggsave("resources/r50/latency_plot.png", plot = plot_latency)
+ggsave("resources/r50/throughput_plot.png", plot = plot_throughput)
 
 print(plot_latency)
 print(plot_throughput)
